@@ -34,7 +34,7 @@ if(isset($_SESSION['auth'])) {
                with font-awesome or any other icon font library -->
 
           <li class="nav-item">
-            <a href="registered.php" class="nav-link">
+            <a href="Friends_List.php" class="nav-link">
               <i class="nav-icon fa fa-users"></i>
               <p>
                 Friends

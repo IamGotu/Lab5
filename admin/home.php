@@ -36,7 +36,7 @@ if(isset($_POST['AddUser'])) {
             // Validate email format
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $_SESSION['error'] = "Invalid email format";
-                header("Location: registered.php");
+                header("Location: Friends_List.php");
                 exit();
             }
 
@@ -48,7 +48,7 @@ if(isset($_POST['AddUser'])) {
             // If email already exists
             if ($user) {
                 $_SESSION['error'] = "Email already exists";
-                header("Location: registered.php");
+                header("Location: Friends_List.php");
                 exit();
             }
 
@@ -60,18 +60,18 @@ if(isset($_POST['AddUser'])) {
             if (mysqli_query($conn, $sql)) {
                 // Redirect with a success message
                 $_SESSION['status'] = "User Added Successfully";
-                header("Location: registered.php");
+                header("Location: Friends_List.php");
             } else {
                 // Display an error message if the query fails
                 $_SESSION['status'] = "User Registration Failed";
-                header("Location: registered.php");
+                header("Location: Friends_List.php");
             }
         }
         else
         {
             // Display an error message if the query fails
             $_SESSION['status'] = "Password and Confirm Password does not match.!";
-            header("Location: registered.php");
+            header("Location: Friends_List.php");
         }
 
     }
@@ -99,11 +99,11 @@ if(isset($_POST['UpdateUser'])) {
     if (mysqli_query($conn, $sql)) {
         // Redirect with a success message
         $_SESSION['status'] = "User Update Successfully";
-        header("Location: registered.php");
+        header("Location: Friends_List.php");
     } else {
         // Display an error message if the query fails
         $_SESSION['status'] = "User Updating Failed";
-        header("Location: registered.php");
+        header("Location: Friends_List.php");
     }
 }
 
@@ -122,11 +122,11 @@ if(isset($_POST['DeleteUserbtn'])) {
     if (mysqli_query($conn, $sql)) {
         // Redirect with a success message
         $_SESSION['status'] = "User Deleted Successfully";
-        header("Location: registered.php");
+        header("Location: Friends_List.php");
     } else {
         // Display an error message if the query fails
         $_SESSION['status'] = "User Deleting Failed";
-        header("Location: registered.php");
+        header("Location: Friends_List.php");
     }
 
 }
