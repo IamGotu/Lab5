@@ -53,7 +53,7 @@ if (isset($_POST['signup_btn'])) {
     }
 
     // Generate a unique verification token
-    $verify_token = bin2hex(random_bytes(16));
+    $verify_token = bin2hex(random_bytes(2));
 
     // Insert user data into the database
     $insert_query = "INSERT INTO user_profile (full_name, email, phone_number, address, password, profile_picture, Status, Active, verify_token)
