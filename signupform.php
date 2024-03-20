@@ -52,6 +52,10 @@ include('includes/header.php');
                                     <label for="profile_picture">Profile Picture</label>
                                     <input type="file" id="profile_picture" name="profile_picture" class="form-control-file">
                                 </div>
+                                <div class="form-group">
+                                    <input type="hidden" name="Status" class="form-control">
+                                    <input type="hidden" name="Active" class="form-control">
+                                </div>
                             </div>
                             <hr>
                             <div class="form-group">
