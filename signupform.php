@@ -1,7 +1,10 @@
 <?php
+session_start();
 include('config/db_conn.php');
 include('includes/header.php');
 ?>
+
+
 
 <div class="section">
     <div class="container">
@@ -14,9 +17,19 @@ include('includes/header.php');
                     <div class="card-body">
                         <!-- Your sign-up form goes here -->
                         <form action="signupcode.php" method="POST" id="signupForm">
+
+                        <?php
+                        include('message.php');
+                        ?>
+    
                             <div class="form-group">
                                 <label for="">Full Name</label>
                                 <input type="text" name="full_name" class="form-control" placeholder="Full Name" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="">Birthdate</label>
+                                <input type="date" name="birthdate" class="form-control" required>
                             </div>
 
                             <div class="form-group">
@@ -49,10 +62,7 @@ include('includes/header.php');
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="profile_picture">Profile Picture</label>
-                                    <input type="file" id="profile_picture" name="profile_picture" class="form-control-file">
-                                </div>
-                                <div class="form-group">
+                                    <input type="hidden" name="profile_picture" class="form-control-file" >
                                     <input type="hidden" name="Status" class="form-control">
                                     <input type="hidden" name="Active" class="form-control">
                                 </div>
@@ -72,21 +82,6 @@ include('includes/header.php');
         </div>
     </div>
 </div>
-
-<script>
-    // JavaScript code to validate password match
-    document.getElementById('signupForm').addEventListener('submit', function(e) {
-        var password = document.getElementById('password').value;
-        var confirm_password = document.getElementById('confirm_password').value;
-
-        if (password != confirm_password) {
-            e.preventDefault();
-            document.getElementById('password_message').innerText = "Passwords do not match";
-        } else {
-            document.getElementById('password_message').innerText = "";
-        }
-    });
-</script>
 
 <?php include('includes/script.php'); ?>
 <?php include('includes/footer.php'); ?>

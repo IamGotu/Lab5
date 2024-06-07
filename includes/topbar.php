@@ -6,34 +6,31 @@
         <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
       </li>
       <li class="nav-item d-none d-sm-inline-block">
-        <a href="index.php" class="nav-link">Home</a>
+        <a href="Dashboard.php" class="nav-link">Home</a>
       </li>
 
     </ul>
 
-    <!-- Right navbar links -->
-    <ul class="navbar-nav ml-auto">
-      <li class="nav-item">
-        <div class="dropdown">
-        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-expanded="false">
-          <?php
-            if(isset($_SESSION['auth']))
-            {
-              echo $_SESSION['auth_user'] ['full_name'];
-            }
-            else
-            {
-              echo "Not Logged in";
-            }
-          ?>
-        </button>
-          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-            <form action="home.php" method="POST">
-              <button type="submit" name="logout_btn" class="dropdown-item">Logout</button>
-            </form>
+      <!-- Right navbar links -->
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+          <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-expanded="false">
+              <?php
+                if(isset($_SESSION['auth'])) {
+                  echo $_SESSION['auth_user']['full_name'];
+                } else {
+                  echo "Not Logged in";
+                }
+              ?>
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+              <form action="Logout.php" method="POST">
+                <button type="submit" name="logout_btn" class="dropdown-item">Logout</button>
+              </form>
+            </div>
           </div>
-        </div>
-      </li>
+        </li>
 
       <!-- Navbar Search -->
       <li class="nav-item">
@@ -67,7 +64,7 @@
           <a href="#" class="dropdown-item">
             <!-- Message Start -->
             <div class="media">
-              <img src="dist/img/user1-128x128.jpg" alt="User Avatar" class="img-size-50 mr-3 img-circle">
+              <img src="assets/dist/img/user1-128x128.jpg" alt="User Avatar" class="img-size-50 mr-3 img-circle">
               <div class="media-body">
                 <h3 class="dropdown-item-title">
                   Brad Diesel
@@ -83,7 +80,7 @@
           <a href="#" class="dropdown-item">
             <!-- Message Start -->
             <div class="media">
-              <img src="dist/img/user8-128x128.jpg" alt="User Avatar" class="img-size-50 img-circle mr-3">
+              <img src="assets/dist/img/user8-128x128.jpg" alt="User Avatar" class="img-size-50 img-circle mr-3">
               <div class="media-body">
                 <h3 class="dropdown-item-title">
                   John Pierce
@@ -99,7 +96,7 @@
           <a href="#" class="dropdown-item">
             <!-- Message Start -->
             <div class="media">
-              <img src="dist/img/user3-128x128.jpg" alt="User Avatar" class="img-size-50 img-circle mr-3">
+              <img src="assets/dist/img/user3-128x128.jpg" alt="User Avatar" class="img-size-50 img-circle mr-3">
               <div class="media-body">
                 <h3 class="dropdown-item-title">
                   Nora Silvester

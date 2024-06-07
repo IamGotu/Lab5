@@ -56,3 +56,18 @@
     });
   });
 </script>
+
+<script>
+    // JavaScript code to validate password match
+    document.getElementById('signupForm').addEventListener('submit', function(e) {
+        var password = document.getElementById('password').value;
+        var confirm_password = document.getElementById('confirm_password').value;
+
+        if (password != confirm_password) {
+            e.preventDefault();
+            document.getElementById('password_message').innerText = "Passwords do not match";
+        } else {
+            document.getElementById('password_message').innerText = "";
+        }
+    });
+</script>

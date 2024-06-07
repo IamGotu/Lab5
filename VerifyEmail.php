@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html>
     <head>
@@ -13,6 +11,10 @@
             <form action="verification_process.php" method="post" class="mt-5">
 
                 <h2 class="mb-4">Email Verification</h2>
+                
+                <?php
+                    include('message.php');
+                ?>
 
                 <div class="form-group">
                     <p>Please enter the verification code sent to your email:</p>
@@ -27,6 +29,11 @@
                     <button type="submit" class="btn btn-primary">Verify</button>
                 </div>
             </form>
+            <div class="text-center">
+                <a href="signup.php" class="mr-2">Create Account</a>
+                <a href="Terms&Condition.php" class="text-align"> Term of Service</a>
+                <a href="Loginform.php" class="mr-2">Login Account</a>
+            </div>
         </div>
     </body>
 </html>
