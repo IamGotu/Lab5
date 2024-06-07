@@ -27,18 +27,18 @@ SET time_zone = "+00:00";
 -- Table structure for table `user`
 --
 
-CREATE TABLE `user` (
-  `user_id` int(10) NOT NULL,
-  `username` varchar(45) DEFAULT NULL,
-  `password` varchar(45) DEFAULT NULL,
-  `Lastname` varchar(45) DEFAULT NULL,
-  `First_name` varchar(45) DEFAULT NULL,
-  `Middle_name` varchar(45) DEFAULT NULL,
-  `Email` varchar(45) DEFAULT NULL,
-  `Status` varchar(45) DEFAULT NULL,
-  `Active` varchar(45) DEFAULT NULL,
-  `verify_token` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `oauth_provider` enum('google','facebook','twitter','linkedin') NOT NULL DEFAULT 'google',
+  `oauth_uid` varchar(50) NOT NULL,
+  `first_name` varchar(25) NOT NULL,
+  `last_name` varchar(25) NOT NULL,
+  `email` varchar(50) NOT NULL,
+  `picture` varchar(255) DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `modified` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -49,7 +49,7 @@ CREATE TABLE `user` (
 CREATE TABLE `user_profile` (
   `user_id` int(11) NOT NULL,
   `full_name` varchar(45) NOT NULL,
-  `birthdate` text NOT NULL,
+  `birthdate` date NOT NULL,
   `email` varchar(45) NOT NULL,
   `phone_number` varchar(45) NOT NULL,
   `address` varchar(45) NOT NULL,
