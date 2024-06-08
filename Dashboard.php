@@ -3,6 +3,11 @@ include('Authentication.php');
 include('includes/header.php');
 include('includes/topbar.php');
 include('includes/sidebar.php');
+// Check if user is not logged in, redirect to login page
+if (isset($_SESSION['success_message'])) {
+  header("Location: Dashboard.php");
+  exit();
+}
 ?>
 
 <!-- Content Wrapper. Contains page content -->

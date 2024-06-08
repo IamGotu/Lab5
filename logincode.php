@@ -50,7 +50,6 @@ if (isset($_POST['login_btn'])) {
             $_SESSION['auth_user'] = [
                 'user_id' => $row['user_id'],
                 'full_name' => $row['full_name'],
-                'birthdate' => $row['birthdate'],
                 'email' => $row['email'],
                 'phone_number' => $row['phone_number'],
                 'address' => $row['address']

@@ -7,6 +7,17 @@
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
+CREATE DATABASE IF NOT EXISTS your_database_name;
+
+USE your_database_name;
+
+CREATE TABLE IF NOT EXISTS users (
+    email VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    PRIMARY KEY (email)
+);
+
+
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
