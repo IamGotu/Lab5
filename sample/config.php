@@ -24,3 +24,4 @@ $password = "";
 $database = "ipt101";
 
 $conn = mysqli_connect($hostname, $username, $password, $database);
+?>
