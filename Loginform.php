@@ -8,7 +8,7 @@ if(isset($_SESSION['auth']))
     exit(0);
 }
 include ("config/db_conn.php");
-require ('Google_login/vendor/autoload.php');
+require_once ('Google_login/vendor/autoload.php');
 ?>
 
     <div class="section">
@@ -74,7 +74,7 @@ require ('Google_login/vendor/autoload.php');
                                 $name =  $google_account_info->name;
 
                                 // Insert or update user profile data in the database
-                                $sql = "INSERT INTO users (email, name) VALUES (?, ?) ON DUPLICATE KEY UPDATE name=?";
+                                $sql = "INSERT INTO user_profile (email, full_name) VALUES (?, ?) ON DUPLICATE KEY UPDATE full_name=?";
                                 $stmt = $conn->prepare($sql);
                                 $stmt->bind_param("sss", $email, $name, $name);
 
