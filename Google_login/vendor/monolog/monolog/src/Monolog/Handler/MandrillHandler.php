@@ -11,9 +11,8 @@
 
 namespace Monolog\Handler;
 
-use Monolog\Level;
+use Monolog\Logger;
 use Swift;
-use Swift_Message;
 
 /**
  * MandrillHandler uses cURL to send the emails to the Mandrill API
@@ -22,25 +21,23 @@ use Swift_Message;
  */
 class MandrillHandler extends MailHandler
 {
-    protected Swift_Message $message;
-    protected string $apiKey;
+    protected $message;
+    protected $apiKey;
 
     /**
-     * @phpstan-param (Swift_Message|callable(): Swift_Message) $message
-     *
-     * @param string                 $apiKey  A valid Mandrill API key
-     * @param callable|Swift_Message $message An example message for real messages, only the body will be replaced
-     *
-     * @throws \InvalidArgumentException if not a Swift Message is set
+     * @param string                  $apiKey  A valid Mandrill API key
+     * @param callable|\Swift_Message $message An example message for real messages, only the body will be replaced
+     * @param string|int              $level   The minimum logging level at which this handler will be triggered
+     * @param bool                    $bubble  Whether the messages that are handled can bubble up the stack or not
      */
-    public function __construct(string $apiKey, callable|Swift_Message $message, int|string|Level $level = Level::Error, bool $bubble = true)
+    public function __construct(string $apiKey, $message, $level = Logger::ERROR, bool $bubble = true)
     {
         parent::__construct($level, $bubble);
 
-        if (!$message instanceof Swift_Message) {
-            $message = $message();
+        if (!$message instanceof \Swift_Message && is_callable($message)) {
+            $message = call_user_func($message);
         }
-        if (!$message instanceof Swift_Message) {
+        if (!$message instanceof \Swift_Message) {
             throw new \InvalidArgumentException('You must provide either a Swift_Message instance or a callable returning it');
         }
         $this->message = $message;
@@ -48,7 +45,7 @@ class MandrillHandler extends MailHandler
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     protected function send(string $content, array $records): void
     {
@@ -59,11 +56,9 @@ class MandrillHandler extends MailHandler
 
         $message = clone $this->message;
         $message->setBody($content, $mime);
-        /** @phpstan-ignore-next-line */
         if (version_compare(Swift::VERSION, '6.0.0', '>=')) {
             $message->setDate(new \DateTimeImmutable());
         } else {
-            /** @phpstan-ignore-next-line */
             $message->setDate(time());
         }
 

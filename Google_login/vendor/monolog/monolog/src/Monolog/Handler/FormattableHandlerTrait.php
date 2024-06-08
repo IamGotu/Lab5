@@ -21,10 +21,14 @@ use Monolog\Formatter\LineFormatter;
  */
 trait FormattableHandlerTrait
 {
-    protected FormatterInterface|null $formatter = null;
+    /**
+     * @var FormatterInterface
+     */
+    protected $formatter;
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
+     * @suppress PhanTypeMismatchReturn
      */
     public function setFormatter(FormatterInterface $formatter): HandlerInterface
     {
@@ -34,11 +38,11 @@ trait FormattableHandlerTrait
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function getFormatter(): FormatterInterface
     {
-        if (null === $this->formatter) {
+        if (!$this->formatter) {
             $this->formatter = $this->getDefaultFormatter();
         }
 

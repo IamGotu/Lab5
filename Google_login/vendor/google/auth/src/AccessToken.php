@@ -18,26 +18,24 @@
 namespace Google\Auth;
 
 use DateTime;
+use Exception;
 use Firebase\JWT\ExpiredException;
 use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
 use Firebase\JWT\SignatureInvalidException;
 use Google\Auth\Cache\MemoryCacheItemPool;
 use Google\Auth\HttpHandler\HttpClientCache;
 use Google\Auth\HttpHandler\HttpHandlerFactory;
+use GuzzleHttp\Psr7;
 use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Utils;
 use InvalidArgumentException;
-use phpseclib3\Crypt\PublicKeyLoader;
-use phpseclib3\Crypt\RSA;
-use phpseclib3\Math\BigInteger;
+use phpseclib\Crypt\RSA;
+use phpseclib\Math\BigInteger;
 use Psr\Cache\CacheItemPoolInterface;
 use RuntimeException;
 use SimpleJWT\InvalidTokenException;
 use SimpleJWT\JWT as SimpleJWT;
 use SimpleJWT\Keys\KeyFactory;
 use SimpleJWT\Keys\KeySet;
-use TypeError;
 use UnexpectedValueException;
 
 /**
@@ -84,22 +82,20 @@ class AccessToken
      * accepted.  By default, the id token must have been issued to this OAuth2 client.
      *
      * @param string $token The JSON Web Token to be verified.
-     * @param array<mixed> $options [optional] {
-     *     Configuration options.
-     *     @type string $audience The indended recipient of the token.
-     *     @type string $issuer The intended issuer of the token.
-     *     @type string $cacheKey The cache key of the cached certs. Defaults to
+     * @param array $options [optional] Configuration options.
+     * @param string $options.audience The indended recipient of the token.
+     * @param string $options.issuer The intended issuer of the token.
+     * @param string $options.cacheKey The cache key of the cached certs. Defaults to
      *        the sha1 of $certsLocation if provided, otherwise is set to
      *        "federated_signon_certs_v3".
-     *     @type string $certsLocation The location (remote or local) from which
+     * @param string $options.certsLocation The location (remote or local) from which
      *        to retrieve certificates, if not cached. This value should only be
      *        provided in limited circumstances in which you are sure of the
      *        behavior.
-     *     @type bool $throwException Whether the function should throw an
+     * @param bool $options.throwException Whether the function should throw an
      *        exception if the verification fails. This is useful for
      *        determining the reason verification failed.
-     * }
-     * @return array<mixed>|false the token payload, if successful, or false if not.
+     * @return array|bool the token payload, if successful, or false if not.
      * @throws InvalidArgumentException If certs could not be retrieved from a local file.
      * @throws InvalidArgumentException If received certs are in an invalid format.
      * @throws InvalidArgumentException If the cert alg is not supported.
@@ -109,11 +105,21 @@ class AccessToken
      */
     public function verify($token, array $options = [])
     {
-        $audience = $options['audience'] ?? null;
-        $issuer = $options['issuer'] ?? null;
-        $certsLocation = $options['certsLocation'] ?? self::FEDERATED_SIGNON_CERT_URL;
-        $cacheKey = $options['cacheKey'] ?? $this->getCacheKeyFromCertLocation($certsLocation);
-        $throwException = $options['throwException'] ?? false; // for backwards compatibility
+        $audience = isset($options['audience'])
+            ? $options['audience']
+            : null;
+        $issuer = isset($options['issuer'])
+            ? $options['issuer']
+            : null;
+        $certsLocation = isset($options['certsLocation'])
+            ? $options['certsLocation']
+            : self::FEDERATED_SIGNON_CERT_URL;
+        $cacheKey = isset($options['cacheKey'])
+            ? $options['cacheKey']
+            : $this->getCacheKeyFromCertLocation($certsLocation);
+        $throwException = isset($options['throwException'])
+            ? $options['throwException']
+            : false; // for backwards compatibility
 
         // Check signature against each available cert.
         $certs = $this->getCerts($certsLocation, $cacheKey, $options);
@@ -128,9 +134,12 @@ class AccessToken
                 return $this->verifyRs256($token, $certs, $audience, $issuer);
             }
             return $this->verifyEs256($token, $certs, $audience, $issuer);
-        } catch (ExpiredException $e) {  // firebase/php-jwt 5+
-        } catch (SignatureInvalidException $e) {  // firebase/php-jwt 5+
+        } catch (ExpiredException $e) {  // firebase/php-jwt 3+
+        } catch (\ExpiredException $e) { // firebase/php-jwt 2
+        } catch (SignatureInvalidException $e) {  // firebase/php-jwt 3+
+        } catch (\SignatureInvalidException $e) { // firebase/php-jwt 2
         } catch (InvalidTokenException $e) { // simplejwt
+        } catch (DomainException $e) {
         } catch (InvalidArgumentException $e) {
         } catch (UnexpectedValueException $e) {
         }
@@ -146,7 +155,7 @@ class AccessToken
      * Identifies the expected algorithm to verify by looking at the "alg" key
      * of the provided certs.
      *
-     * @param array<mixed> $certs Certificate array according to the JWK spec (see
+     * @param array $certs Certificate array according to the JWK spec (see
      *                     https://tools.ietf.org/html/rfc7517).
      * @return string The expected algorithm, such as "ES256" or "RS256".
      */
@@ -174,13 +183,13 @@ class AccessToken
      * Verifies an ES256-signed JWT.
      *
      * @param string $token The JSON Web Token to be verified.
-     * @param array<mixed> $certs Certificate array according to the JWK spec (see
+     * @param array $certs Certificate array according to the JWK spec (see
      *        https://tools.ietf.org/html/rfc7517).
      * @param string|null $audience If set, returns false if the provided
      *        audience does not match the "aud" claim on the JWT.
      * @param string|null $issuer If set, returns false if the provided
      *        issuer does not match the "iss" claim on the JWT.
-     * @return array<mixed> the token payload, if successful, or false if not.
+     * @return array|bool the token payload, if successful, or false if not.
      */
     private function verifyEs256($token, array $certs, $audience = null, $issuer = null)
     {
@@ -195,8 +204,8 @@ class AccessToken
         $jwt = $this->callSimpleJwtDecode([$token, $jwkset, 'ES256']);
         $payload = $jwt->getClaims();
 
-        if ($audience) {
-            if (!isset($payload['aud']) || $payload['aud'] != $audience) {
+        if (isset($payload['aud'])) {
+            if ($audience && $payload['aud'] != $audience) {
                 throw new UnexpectedValueException('Audience does not match');
             }
         }
@@ -214,13 +223,13 @@ class AccessToken
      * Verifies an RS256-signed JWT.
      *
      * @param string $token The JSON Web Token to be verified.
-     * @param array<mixed> $certs Certificate array according to the JWK spec (see
+     * @param array $certs Certificate array according to the JWK spec (see
      *        https://tools.ietf.org/html/rfc7517).
      * @param string|null $audience If set, returns false if the provided
      *        audience does not match the "aud" claim on the JWT.
      * @param string|null $issuer If set, returns false if the provided
      *        issuer does not match the "iss" claim on the JWT.
-     * @return array<mixed> the token payload, if successful, or false if not.
+     * @return array|bool the token payload, if successful, or false if not.
      */
     private function verifyRs256($token, array $certs, $audience = null, $issuer = null)
     {
@@ -237,19 +246,28 @@ class AccessToken
                     'RSA certs expects "n" and "e" to be set'
                 );
             }
-            $publicKey = $this->loadPhpsecPublicKey($cert['n'], $cert['e']);
+            $rsa = new RSA();
+            $rsa->loadKey([
+                'n' => new BigInteger($this->callJwtStatic('urlsafeB64Decode', [
+                    $cert['n'],
+                ]), 256),
+                'e' => new BigInteger($this->callJwtStatic('urlsafeB64Decode', [
+                    $cert['e']
+                ]), 256),
+            ]);
 
             // create an array of key IDs to certs for the JWT library
-            $keys[$cert['kid']] = new Key($publicKey, 'RS256');
+            $keys[$cert['kid']] =  $rsa->getPublicKey();
         }
 
         $payload = $this->callJwtStatic('decode', [
             $token,
             $keys,
+            ['RS256']
         ]);
 
-        if ($audience) {
-            if (!property_exists($payload, 'aud') || $payload->aud != $audience) {
+        if (property_exists($payload, 'aud')) {
+            if ($audience && $payload->aud != $audience) {
                 throw new UnexpectedValueException('Audience does not match');
             }
         }
@@ -268,8 +286,8 @@ class AccessToken
      * Revoke an OAuth2 access token or refresh token. This method will revoke the current access
      * token, if a token isn't provided.
      *
-     * @param string|array<mixed> $token The token (access token or a refresh token) that should be revoked.
-     * @param array<mixed> $options [optional] Configuration options.
+     * @param string|array $token The token (access token or a refresh token) that should be revoked.
+     * @param array $options [optional] Configuration options.
      * @return bool Returns True if the revocation was successful, otherwise False.
      */
     public function revoke($token, array $options = [])
@@ -282,7 +300,7 @@ class AccessToken
             }
         }
 
-        $body = Utils::streamFor(http_build_query(['token' => $token]));
+        $body = Psr7\stream_for(http_build_query(['token' => $token]));
         $request = new Request('POST', self::OAUTH2_REVOKE_URI, [
             'Cache-Control' => 'no-store',
             'Content-Type'  => 'application/x-www-form-urlencoded',
@@ -302,8 +320,8 @@ class AccessToken
      *
      * @param string $location The location from which to retrieve certs.
      * @param string $cacheKey The key under which to cache the retrieved certs.
-     * @param array<mixed> $options [optional] Configuration options.
-     * @return array<mixed>
+     * @param array $options [optional] Configuration options.
+     * @return array
      * @throws InvalidArgumentException If received certs are in an invalid format.
      */
     private function getCerts($location, $cacheKey, array $options = [])
@@ -311,9 +329,11 @@ class AccessToken
         $cacheItem = $this->cache->getItem($cacheKey);
         $certs = $cacheItem ? $cacheItem->get() : null;
 
-        $expireTime = null;
+        $gotNewCerts = false;
         if (!$certs) {
-            list($certs, $expireTime) = $this->retrieveCertsFromLocation($location, $options);
+            $certs = $this->retrieveCertsFromLocation($location, $options);
+
+            $gotNewCerts = true;
         }
 
         if (!isset($certs['keys'])) {
@@ -329,8 +349,8 @@ class AccessToken
 
         // Push caching off until after verifying certs are in a valid format.
         // Don't want to cache bad data.
-        if ($expireTime) {
-            $cacheItem->expiresAt(new DateTime($expireTime));
+        if ($gotNewCerts) {
+            $cacheItem->expiresAt(new DateTime('+1 hour'));
             $cacheItem->set($certs);
             $this->cache->save($cacheItem);
         }
@@ -341,16 +361,15 @@ class AccessToken
     /**
      * Retrieve and cache a certificates file.
      *
-     * @param string $url location
-     * @param array<mixed> $options [optional] Configuration options.
-     * @return array{array<mixed>, string}
+     * @param $url string location
+     * @param array $options [optional] Configuration options.
+     * @return array certificates
      * @throws InvalidArgumentException If certs could not be retrieved from a local file.
      * @throws RuntimeException If certs could not be retrieved from a remote location.
      */
     private function retrieveCertsFromLocation($url, array $options = [])
     {
         // If we're retrieving a local file, just grab it.
-        $expireTime = '+1 hour';
         if (strpos($url, 'http') !== 0) {
             if (!file_exists($url)) {
                 throw new InvalidArgumentException(sprintf(
@@ -359,28 +378,14 @@ class AccessToken
                 ));
             }
 
-            return [
-                json_decode((string) file_get_contents($url), true),
-                $expireTime
-            ];
+            return json_decode(file_get_contents($url), true);
         }
 
         $httpHandler = $this->httpHandler;
         $response = $httpHandler(new Request('GET', $url), $options);
 
         if ($response->getStatusCode() == 200) {
-            if ($cacheControl = $response->getHeaderLine('Cache-Control')) {
-                array_map(function ($value) use (&$expireTime) {
-                    list($key, $value) = explode('=', $value) + [null, null];
-                    if (trim($key) == 'max-age') {
-                        $expireTime = '+' . $value . ' seconds';
-                    }
-                }, explode(',', $cacheControl));
-            }
-            return [
-                json_decode((string) $response->getBody(), true),
-                $expireTime
-            ];
+            return json_decode((string) $response->getBody(), true);
         }
 
         throw new RuntimeException(sprintf(
@@ -389,70 +394,71 @@ class AccessToken
         ), $response->getStatusCode());
     }
 
-    /**
-     * @return void
-     */
     private function checkAndInitializePhpsec()
     {
-        if (!class_exists(RSA::class)) {
-            throw new RuntimeException('Please require phpseclib/phpseclib v3 to use this utility.');
+        // @codeCoverageIgnoreStart
+        if (!class_exists('phpseclib\Crypt\RSA')) {
+            throw new RuntimeException('Please require phpseclib/phpseclib v2 to use this utility.');
         }
+        // @codeCoverageIgnoreEnd
+
+        $this->setPhpsecConstants();
     }
 
-    /**
-     * @return string
-     * @throws TypeError If the key cannot be initialized to a string.
-     */
-    private function loadPhpsecPublicKey(string $modulus, string $exponent): string
-    {
-        $key = PublicKeyLoader::load([
-            'n' => new BigInteger($this->callJwtStatic('urlsafeB64Decode', [
-                $modulus,
-            ]), 256),
-            'e' => new BigInteger($this->callJwtStatic('urlsafeB64Decode', [
-                $exponent
-            ]), 256),
-        ]);
-        $formattedPublicKey = $key->toString('PKCS8');
-        if (!is_string($formattedPublicKey)) {
-            throw new TypeError('Failed to initialize the key');
-        }
-        return $formattedPublicKey;
-    }
-
-    /**
-     * @return void
-     */
     private function checkSimpleJwt()
     {
         // @codeCoverageIgnoreStart
-        if (!class_exists(SimpleJwt::class)) {
+        if (!class_exists('SimpleJWT\JWT')) {
             throw new RuntimeException('Please require kelvinmo/simplejwt ^0.2 to use this utility.');
         }
         // @codeCoverageIgnoreEnd
     }
 
     /**
-     * Provide a hook to mock calls to the JWT static methods.
+     * phpseclib calls "phpinfo" by default, which requires special
+     * whitelisting in the AppEngine VM environment. This function
+     * sets constants to bypass the need for phpseclib to check phpinfo
      *
-     * @param string $method
-     * @param array<mixed> $args
-     * @return mixed
+     * @see phpseclib/Math/BigInteger
+     * @see https://github.com/GoogleCloudPlatform/getting-started-php/issues/85
+     * @codeCoverageIgnore
      */
-    protected function callJwtStatic($method, array $args = [])
+    private function setPhpsecConstants()
     {
-        return call_user_func_array([JWT::class, $method], $args); // @phpstan-ignore-line
+        if (filter_var(getenv('GAE_VM'), FILTER_VALIDATE_BOOLEAN)) {
+            if (!defined('MATH_BIGINTEGER_OPENSSL_ENABLED')) {
+                define('MATH_BIGINTEGER_OPENSSL_ENABLED', true);
+            }
+            if (!defined('CRYPT_RSA_MODE')) {
+                define('CRYPT_RSA_MODE', RSA::MODE_OPENSSL);
+            }
+        }
     }
 
     /**
      * Provide a hook to mock calls to the JWT static methods.
      *
-     * @param array<mixed> $args
+     * @param string $method
+     * @param array $args
+     * @return mixed
+     */
+    protected function callJwtStatic($method, array $args = [])
+    {
+        $class = class_exists('Firebase\JWT\JWT')
+            ? 'Firebase\JWT\JWT'
+            : 'JWT';
+        return call_user_func_array([$class, $method], $args);
+    }
+
+    /**
+     * Provide a hook to mock calls to the JWT static methods.
+     *
+     * @param array $args
      * @return mixed
      */
     protected function callSimpleJwtDecode(array $args = [])
     {
-        return call_user_func_array([SimpleJwt::class, 'decode'], $args);
+        return call_user_func_array(['SimpleJWT\JWT', 'decode'], $args);
     }
 
     /**

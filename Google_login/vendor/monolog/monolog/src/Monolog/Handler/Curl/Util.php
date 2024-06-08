@@ -11,8 +11,6 @@
 
 namespace Monolog\Handler\Curl;
 
-use CurlHandle;
-
 /**
  * This class is marked as internal and it is not under the BC promise of the package.
  *
@@ -20,8 +18,7 @@ use CurlHandle;
  */
 final class Util
 {
-    /** @var array<int> */
-    private static array $retriableErrorCodes = [
+    private static $retriableErrorCodes = [
         CURLE_COULDNT_RESOLVE_HOST,
         CURLE_COULDNT_CONNECT,
         CURLE_HTTP_NOT_FOUND,
@@ -34,17 +31,19 @@ final class Util
     /**
      * Executes a CURL request with optional retries and exception on failure
      *
-     * @param  CurlHandle  $ch curl handler
+     * @param  resource    $ch             curl handler
+     * @param  int         $retries
+     * @param  bool        $closeAfterDone
      * @return bool|string @see curl_exec
      */
-    public static function execute(CurlHandle $ch, int $retries = 5, bool $closeAfterDone = true)
+    public static function execute($ch, int $retries = 5, bool $closeAfterDone = true)
     {
         while ($retries--) {
             $curlResponse = curl_exec($ch);
             if ($curlResponse === false) {
                 $curlErrno = curl_errno($ch);
 
-                if (false === in_array($curlErrno, self::$retriableErrorCodes, true) || $retries === 0) {
+                if (false === in_array($curlErrno, self::$retriableErrorCodes, true) || !$retries) {
                     $curlError = curl_error($ch);
 
                     if ($closeAfterDone) {
