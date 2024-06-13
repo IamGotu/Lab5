@@ -35,11 +35,15 @@ if (isset($_GET['code'])) {
         $google_account_info = $google_oauth->userinfo->get();
         $email = $google_account_info->email;
         $full_name = $google_account_info->name;
+        $profile_picture = 'user.png';
+        $password = '12345';
+        $Status = 'Verified';
+        $Active = 'Online';
 
         // Insert or update user profile data in the database
-        $sql = "INSERT INTO user_profile (email, full_name) VALUES (?, ?) ON DUPLICATE KEY UPDATE full_name=?";
+        $sql = "INSERT INTO user_profile (email, full_name, password, profile_picture, Status, Active) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE full_name=?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sss", $email, $full_name, $full_name);
+        $stmt->bind_param("sssssss", $email, $full_name, $password, $profile_picture, $Status, $Active, $full_name);
 
         if ($stmt->execute()) {
             // Fetch the user_id from the database
@@ -54,7 +58,12 @@ if (isset($_GET['code'])) {
             $_SESSION['auth_user'] = [
                 'user_id' => $user['user_id'],
                 'email' => $email,
-                'full_name' => $full_name
+                'full_name' => $full_name,
+                'password' => $password,
+                'profile_picture' => $profile_picture,
+                'Status' => $Status,
+                'Active' => $Active
+
             ];
             header('Location: Dashboard.php');
             exit(0);
