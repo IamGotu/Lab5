@@ -44,6 +44,7 @@ class ComposerStaticInit5cd48b6645860e6f71f44390d4549abe
         'F' => 
         array (
             'Firebase\\JWT\\' => 13,
+            'Facebook\\' => 9,
         ),
     );
 
@@ -104,6 +105,10 @@ class ComposerStaticInit5cd48b6645860e6f71f44390d4549abe
         'Firebase\\JWT\\' => 
         array (
             0 => __DIR__ . '/..' . '/firebase/php-jwt/src',
+        ),
+        'Facebook\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/facebook/graph-sdk/src/Facebook',
         ),
     );
 
