@@ -5,7 +5,7 @@ session_start();
 include ('config/db_conn.php');
 
 // Check if user is not logged in, redirect to login page
-if (isset($_SESSION['success_message'])) {
+if (isset($_SESSION['status'])) {
     header("Location: Dashboard.php");
     exit();
 }
