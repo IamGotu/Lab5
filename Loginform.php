@@ -9,7 +9,7 @@ if (isset($_SESSION['auth'])) {
 }
 
 include("config/db_conn.php");
-require_once('Google_login/vendor/autoload.php');
+require_once('vendor/autoload.php');
 
 // Google OAuth configuration
 $clientID = '147613768576-2bund5num0s4eams0tglrgav3vauu79j.apps.googleusercontent.com';
