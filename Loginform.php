@@ -14,7 +14,7 @@ require_once('vendor/autoload.php');
 // Google OAuth configuration
 $clientID = '147613768576-2bund5num0s4eams0tglrgav3vauu79j.apps.googleusercontent.com';
 $clientSecret = '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';
-$redirectUri = 'http://localhost:3000/Loginform.php'; // Make sure this URI matches your OAuth 2.0 credentials setup
+$redirectUri = 'http://localhost:3000/Loginform.php';
 
 // Create Google Client
 $client = new Google_Client();
